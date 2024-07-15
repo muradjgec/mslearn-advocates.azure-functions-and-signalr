@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js project to Azure Function App - api-murad
+name: Server - Build and deploy Node.js project to Azure Function App - api-murad
 
 on:
   push:
@@ -12,6 +12,7 @@ on:
 env:
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
   NODE_VERSION: '20.x' # set this to the node version to use (supports 8.x, 10.x, 12.x)
+  PACKAGE_PATH: 'start/server'
 
 jobs:
   build:
@@ -21,21 +22,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node ${{ env.NODE_VERSION }} Environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: 'Resolve Project Dependencies Using Npm'
         shell: bash
         run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.PACKAGE_PATH }}'
           npm install
           npm run build --if-present
           npm run test --if-present
           popd
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: |
+          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.PACKAGE_PATH}}'
+          zip -r release.zip .
+          popd
+          cp ./${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/${{ env.PACKAGE_PATH }}/release.zip ./release.zip
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -64,9 +69,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_19B7473FA8B6433D82D342D95C72211F }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0D6494BB993444E19DB3B2A08CA7F4C2 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0BB7F27913674C2FA123684EA635E77E }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_1BEC0D7227F849EBAF34D2FF515D7079 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_589B2A2DC39040BE9CFEF403080CA96C }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F2E554768BE44ECFA9EB7D1561647CBE }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
